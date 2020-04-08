@@ -30,14 +30,14 @@ import java.util.List;
 
 import androidx.fragment.app.Fragment;
 
-import great.android.cmu.ubiapp.CustomExpandableListAdapter;
+import great.android.cmu.ubiapp.ui.home.listview.CustomExpandableListAdapter;
 import great.android.cmu.ubiapp.MainActivity;
 import great.android.cmu.ubiapp.helpers.CalculateMetrics;
 import great.android.cmu.ubiapp.helpers.Keywords;
 import great.android.cmu.ubiapp.helpers.SendBroadcastTask;
 import great.android.cmu.ubiapp.helpers.PostMetricsTask;
 import great.android.cmu.ubiapp.model.Device;
-import great.android.cmu.ubiapp.ExpandableListDataPump;
+import great.android.cmu.ubiapp.ui.home.listview.ExpandableListDataPump;
 import great.android.cmu.ubiapp.R;
 
 import static great.android.cmu.ubiapp.MainActivity.sharedPrefs;
@@ -51,9 +51,6 @@ public class SavedTabsFragment extends Fragment {
 
     List<String> expandableListTitle;
     HashMap<String, List<String>> expandableListDetail;
-
-
-
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -86,9 +83,14 @@ public class SavedTabsFragment extends Fragment {
         expandableListView.setOnChildClickListener(new ExpandableListView.OnChildClickListener() {
             @Override
             public boolean onChildClick(ExpandableListView parent, View v, int groupPosition, int childPosition, long id) {
-                if(expandableListTitle.get(groupPosition).equals(Keywords.LD_ACTUATORS)){
+                if(sharedPrefs.getBoolean(Keywords.WORKING_HOUR, false)){
+                    Toast.makeText(getContext(), "It is not possible to send messages outside the working hours.", Toast.LENGTH_LONG).show();
+                    return false;
+                }
+
+                if(expandableListTitle.get(groupPosition).equals(Keywords.LD_ACTUATORS) || expandableListTitle.get(groupPosition).equals(Keywords.LD_RESEARCHERS)){
                     String[] deviceData = expandableListDetail.get(expandableListTitle.get(groupPosition)).get(childPosition).toString().split(" - ");
-                    Toast.makeText(getContext(), "Sending broadcast to device with this IP [" + deviceData[2] + "]", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getContext(), "Sending message to device with this IP [" + deviceData[2] + "]", Toast.LENGTH_SHORT).show();
                     new SendBroadcastTask(getActivity()).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, deviceData[2]);
                 }else if(expandableListTitle.get(groupPosition).equals(Keywords.LD_SENSORS)){
                     String[] deviceData = expandableListDetail.get(expandableListTitle.get(groupPosition)).get(childPosition).toString().split(" - ");
@@ -117,6 +119,7 @@ public class SavedTabsFragment extends Fragment {
                     }
                     new SendBroadcastTask(getActivity()).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, ipsToBroadcast);
                 }
+
                 return false;
             }
         });

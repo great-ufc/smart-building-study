@@ -4,7 +4,6 @@ package great.android.cmu.ubiapp;
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.Context;
-import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.location.Location;
@@ -34,18 +33,17 @@ import androidx.navigation.ui.NavigationUI;
 import great.android.cmu.ubiapp.context_manager.Async_Context_Manager;
 import great.android.cmu.ubiapp.helpers.Keywords;
 import great.android.cmu.ubiapp.model.Device;
-import great.android.cmu.ubiapp.rules.flood_rules.Batt50Rule;
-import great.android.cmu.ubiapp.rules.flood_rules.Hour12Rule;
-import great.android.cmu.ubiapp.rules.flood_rules.Hour18Rule;
-import great.android.cmu.ubiapp.rules.flood_rules.Temp14Rule;
-import great.android.cmu.ubiapp.rules.flood_rules.Temp22Rule;
-import great.android.cmu.ubiapp.rules.flood_rules.Temp30Rule;
 import great.android.cmu.ubiapp.workflow.MainWorkflow;
+import great.android.cmu.ubiapp.workflow.rules.BatteryRule;
+import great.android.cmu.ubiapp.workflow.rules.LastThreeRule;
+import great.android.cmu.ubiapp.workflow.rules.WorkingHourRule;
 
-
+/**
+ * nohup java -jar coap-server-2.2.6.jar &
+ * */
 public class MainActivity extends AppCompatActivity {
 
-    private ArrayList<Device> devices;
+    public static ArrayList<Device> devices;
     private Date lastDeviceUpdade;
 
     public static SharedPreferences sharedPrefs;
@@ -61,12 +59,22 @@ public class MainActivity extends AppCompatActivity {
         Manifest.permission.ACCESS_WIFI_STATE
     };
 
-    Batt50Rule batt50Rule;
-    Hour12Rule hour12Rule;
-    Hour18Rule hour18Rule;
-    Temp14Rule temp14Rule;
-    Temp22Rule temp22Rule;
-    Temp30Rule temp30Rule;
+    /**
+     * 1. Point-to-point communication ok!
+     * 2. Professor view only researchers that they supervise
+     * 3. Students view only researchers who work on the same project and the advisor
+     * 4. Adaptation:
+     *    4.1. Battery level changes the information displayed on the screen and reduces the detection radius
+     *    - DONE: Create adaptation rule for battery level
+     *    4.2. Communication outside working hours is blocked
+     *    - DONE: Create adaptation rule for working hour
+     *    4.3. Last three users present in the building are notified to leave together
+     *    - DONE: Create adaptation rule for last three users present in the building
+     **/
+
+    private BatteryRule batteryRule;
+    private WorkingHourRule workingHourRule;
+    private LastThreeRule lastThreeRule;
 
     // Intent intent  = new Intent("Context_Manager");
 
@@ -112,19 +120,12 @@ public class MainActivity extends AppCompatActivity {
         // Register the listener with the Location Manager to receive location updates
         locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, locationListener);
 
-        batt50Rule = new Batt50Rule(getApplicationContext());
-        hour12Rule = new Hour12Rule(getApplicationContext());
-        hour18Rule = new Hour18Rule(getApplicationContext());
-        temp14Rule = new Temp14Rule(getApplicationContext());
-        temp22Rule = new Temp22Rule(getApplicationContext());
-        temp30Rule = new Temp30Rule(getApplicationContext());
-
-        MainWorkflow.receive(batt50Rule);
-        MainWorkflow.receive(hour12Rule);
-        MainWorkflow.receive(hour18Rule);
-        MainWorkflow.receive(temp14Rule);
-        MainWorkflow.receive(temp22Rule);
-        MainWorkflow.receive(temp30Rule);
+        batteryRule = new BatteryRule(getApplicationContext());
+        workingHourRule = new WorkingHourRule(getApplicationContext());
+        lastThreeRule = new LastThreeRule(getApplicationContext());
+        MainWorkflow.receive(batteryRule);
+        MainWorkflow.receive(workingHourRule);
+        MainWorkflow.receive(lastThreeRule);
         // startService(intent);
 
         Async_Context_Manager.startContextManager(getApplicationContext());

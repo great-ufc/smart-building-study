@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">UbiApp</string>
+    <string name="app_name">RQ1v1</string>
     <string name="title_home">Home</string>
     <string name="title_dashboard">Dashboard</string>
     <string name="title_notifications">Notifications</string>
@@ -21,4 +21,17 @@
     <string name="attachment_title">Download incoming attachments</string>
     <string name="attachment_summary_on">Automatically download attachments for incoming emails</string>
     <string name="attachment_summary_off">Only download attachments when manually requested</string>
+
+    <string-array name="profile_arrays">
+        <item>Professor</item>
+        <item>Researcher</item>
+    </string-array>
+
+    <string-array name="taskforce_arrays">
+        <item>GT-Saúde</item>
+        <item>GT-Dados</item>
+        <item>GT-Dívida Técnica</item>
+        <item>GT-Aplicações</item>
+        <item>GT-Testes</item>
+    </string-array>
 </resources>
